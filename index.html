@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0,viewport-fit=cover">
+  <title>School Login</title>
+  <link rel="stylesheet" href="css/style.css" media="all">
+</head>
+
+<body>
+  <div class="container">
+    <form class="form" id="login">
+      <h1 class="form__title">Login</h1>
+      <div class="form__message form__message--error"></div>
+      <div class="form__input-group">
+        <input type="text" class="form__input" autofocus placeholder="Email" id="email">
+        <div class="form__input-error-message"></div>
+      </div>
+
+      <div id="otp" class="form--hidden">
+        <p>Please enter OTP recieved from your email.</p>
+        <div class="form__input-group">
+          <input type="text" class="form__input" autofocus placeholder="OTP" id="password">
+          <div class="form__input-error-message"></div>
+        </div>
+      </div>
+      <div id="loading" class="form--hidden">
+        <div class="loader"></div>
+        <p>Your info is being processed.</p>
+      </div>
+
+      <button class="form__button" type="submit">Continue</button>
+      <!-- <p class="form__text">
+        <a href="#" class="form__link">Forgot your password?</a>
+      </p> -->
+    </form>
+    <h1 class="form__title" id="loggedin" hidden>You're logged in!</h1>
+    <button class="form__button" type="submit" id="closebtn" onclick="{liff.closeWindow()}" hidden>Close</button>
+  </div>
+
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script>
+    function setFormMessage(formElement, type, message) {
+      const messageElement = formElement.querySelector(".form__message");
+
+      messageElement.textContent = message;
+      messageElement.classList.remove("form__message--success", "form__message--error");
+      messageElement.classList.add(`form__message--${type}`);
+    }
+
+    function setInputError(inputElement, message) {
+      inputElement.classList.add("form__input--error");
+      inputElement.parentElement.querySelector(".form__input-error-message").textContent = message;
+    }
+
+    function clearInputError(inputElement) {
+      inputElement.classList.remove("form__input--error");
+      inputElement.parentElement.querySelector(".form__input-error-message").textContent = "";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const loginForm = document.querySelector("#login");
+
+      loginForm.addEventListener("submit", e => login(e));
+
+      document.querySelectorAll(".form__input").forEach(inputElement => {
+        inputElement.addEventListener("blur", e => {
+          if (e.target.id === "signupUsername" && e.target.value.length > 0 && e.target.value.length < 10) {
+            setInputError(inputElement, "Username must be at least 10 characters in length");
+          }
+        });
+
+        inputElement.addEventListener("input", e => {
+          clearInputError(inputElement);
+        });
+      });
+
+      document.querySelectorAll(".form__input").forEach(inputElement => {
+        inputElement.addEventListener("blur", e => {
+          if (e.target.id === "studentID" && e.target.value.length > 0 && e.target.value.length < 5) {
+            setInputError(inputElement, "Student ID must be at least 5 characters in length");
+          }
+        });
+
+        inputElement.addEventListener("input", e => {
+          clearInputError(inputElement);
+        });
+      });
+    });
+
+    // async function login(e) {
+    //   const loginForm = document.querySelector("#login");
+    //   e.preventDefault();
+    //   const profile = await liff.getProfile()
+    //   const loginUrl = "https://localhost:8000/createotp"
+
+    //   var requestOptions = {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json'
+    //     },
+    //     body: data,
+    //     redirect: 'follow'
+    //   };
+
+
+    //   var response = await fetch(loginUrl, requestOptions)
+    //   if (response.status === 200) {
+    //     if (liff.getContext().type !== "none") {
+    //       await liff.sendMessages([
+    //         {
+    //           "type": "text",
+    //           "text": "Login"
+    //         }
+    //       ])
+    //     }
+    //     loginForm.classList.add("form--hidden");
+    //     document.getElementById("loggedin").style.display = "block"
+    //     document.getElementById("closebtn").style.display = "block"
+    //   }
+    //   else {
+    //     setFormMessage(loginForm, "error", "Invalid username/password combination");
+    //   }
+    // }
+    var otpsent = false;
+    async function login(e) {
+      const loginForm = document.querySelector("#login");
+      e.preventDefault();
+      if (!otpsent) {
+        const loginUrl = "http://localhost:8000/createotp";
+
+        const loadingProgress = document.querySelector("#loading");
+        loadingProgress.classList.remove("form--hidden")
+
+        var data = JSON.stringify({
+          "email": document.getElementById("email").value
+        });
+
+        var requestOptions = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: data,
+        };
+
+        var response = await fetch(loginUrl, requestOptions)
+        if (response.status === 200) {
+          loadingProgress.classList.add("form--hidden");
+          const otpform = document.querySelector("#otp");
+          otpform.classList.remove("form--hidden");
+        }
+        else {
+          loadingProgress.classList.add("form--hidden");
+          setFormMessage(loginForm, "error", "Invalid email address.");
+        }
+      }
+      else {
+        const loginUrl = "http://localhost:8000/createotp";
+        const profile = await liff.getProfile();
+        var data = JSON.stringify({
+          "userID": profile.userId,
+          "email": document.getElementById("email").value,
+          "password": document.getElementById("password").value,
+        });
+        var requestOptions = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: data,
+        };
+
+        var response = await fetch(loginUrl, requestOptions);
+        if (response.status === 200) {
+          if (liff.getContext().type !== "none") {
+            await liff.sendMessages([
+              {
+                "type": "text",
+                "text": "Login"
+              }
+            ])
+          }
+          loginForm.classList.add("form--hidden");
+          document.getElementById("loggedin").style.display = "block"
+          document.getElementById("closebtn").style.display = "block"
+        }
+        else {
+          setFormMessage(loginForm, "error", "Invalid OTP.");
+        }
+      }
+    }
+
+    async function main() {
+      await liff.init({ liffId: "1656986385-kPOKbx8a" })
+    }
+    main()
+    console.log("Initialized liff")
+  </script>
+</body>
+
+</html>
