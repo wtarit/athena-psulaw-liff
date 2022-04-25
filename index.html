@@ -128,7 +128,7 @@
       const loginForm = document.querySelector("#login");
       e.preventDefault();
       if (!otpsent) {
-        const loginUrl = "http://localhost:8000/createotp";
+        const loginUrl = "https://psulaw-dot-athena-team.et.r.appspot.com/createotp";
 
         const loadingProgress = document.querySelector("#loading");
         loadingProgress.classList.remove("form--hidden")
@@ -157,7 +157,7 @@
         }
       }
       else {
-        const loginUrl = "http://localhost:8000/createotp";
+        const loginUrl = "https://psulaw-dot-athena-team.et.r.appspot.com/login";
         const profile = await liff.getProfile();
         var data = JSON.stringify({
           "userID": profile.userId,
