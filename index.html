@@ -89,40 +89,6 @@
       });
     });
 
-    // async function login(e) {
-    //   const loginForm = document.querySelector("#login");
-    //   e.preventDefault();
-    //   const profile = await liff.getProfile()
-    //   const loginUrl = "https://localhost:8000/createotp"
-
-    //   var requestOptions = {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json'
-    //     },
-    //     body: data,
-    //     redirect: 'follow'
-    //   };
-
-
-    //   var response = await fetch(loginUrl, requestOptions)
-    //   if (response.status === 200) {
-    //     if (liff.getContext().type !== "none") {
-    //       await liff.sendMessages([
-    //         {
-    //           "type": "text",
-    //           "text": "Login"
-    //         }
-    //       ])
-    //     }
-    //     loginForm.classList.add("form--hidden");
-    //     document.getElementById("loggedin").style.display = "block"
-    //     document.getElementById("closebtn").style.display = "block"
-    //   }
-    //   else {
-    //     setFormMessage(loginForm, "error", "Invalid username/password combination");
-    //   }
-    // }
     var otpsent = false;
     async function login(e) {
       const loginForm = document.querySelector("#login");
@@ -143,6 +109,7 @@
             'Content-Type': 'application/json'
           },
           body: data,
+          redirect: 'follow'
         };
 
         var response = await fetch(loginUrl, requestOptions)
